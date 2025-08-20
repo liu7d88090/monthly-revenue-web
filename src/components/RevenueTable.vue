@@ -72,7 +72,7 @@ const trendClass = v => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(r, i) in viewRows" :key="i">
+          <tr v-for="r in viewRows" :key="`${r.companyCode}-${r.dataYearMonth}`">
             <td>{{ r.reportDate || '—' }}</td>
             <td><span class="chip">{{ r.dataYearMonth || '—' }}</span></td>
             <td>{{ r.companyCode || '—' }}</td>
