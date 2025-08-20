@@ -2,7 +2,13 @@ import type { PagedResponse, SearchParams, RevenueUpsertRequest } from '../types
 
 const BASE = (import.meta.env.VITE_API_BASE ?? '').replace(/\/$/, '');
 
+let lastCtrl: AbortController | null = null;
 async function api<T>(path: string, options: RequestInit): Promise<T> {
+  if (options.signal == null) {
+    if (lastCtrl) lastCtrl.abort();
+    lastCtrl = new AbortController();
+    options.signal = lastCtrl.signal;
+  }
   const url = `${BASE}${path}`;
   const res = await fetch(url, options);
   const text = await res.text().catch(() => '');
@@ -25,9 +31,9 @@ export async function searchRevenues(params: SearchParams = {}): Promise<PagedRe
   });
 }
 
-export async function upsertRevenue(payload: RevenueUpsertRequest): Promise<unknown> {
+export async function upsertRevenue(payload: RevenueUpsertRequest): Promise<{ affected?: number } | number> {
   const json = JSON.stringify(payload, (_k, v) => (v === undefined ? undefined : v));
-  return api<unknown>('/api/revenues/upsert', {
+  return api('/api/revenues/upsert', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: json,

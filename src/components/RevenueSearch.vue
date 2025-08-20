@@ -100,7 +100,7 @@ function buildPayload(f: InsertForm): RevenueUpsertRequest | null {
   const payload: RevenueUpsertRequest = {
     ReportDate: num(f.reportDate),
     DataYearMonth: num(f.dataYearMonth) ?? 0,
-    CompanyCode: code,
+    CompanyCode: num(code) ?? 0,
     CompanyName: str(f.companyName),
     Industry: str(f.industry),
     Rev_CurrentMonth: num(f.rev_CurrentMonth),
@@ -123,7 +123,10 @@ async function submit() {
     const payload = buildPayload(form.value)
     if (!payload) return
 
-    await upsertRevenue(payload)
+    const resp = await upsertRevenue(payload);
+    const affected = typeof resp === 'number' ? resp : (resp?.affected ?? undefined);
+    if (affected === 1) openDialog('新增成功');
+    else if (affected === 0) openDialog('資料已存在（未異動）');
     await query()
 
     form.value = {
@@ -159,11 +162,11 @@ onMounted(() => { query() })
         </div>
         <div class="field">
           <label>起始年月</label>
-          <input v-model="fromYM" inputmode="numeric" pattern="\d{6}" placeholder="YYYYMM（可留空）" />
+          <input v-model="fromYM" inputmode="numeric" pattern="\d{5}" placeholder="YYYMM（可留空）" />
         </div>
         <div class="field">
           <label>結束年月</label>
-          <input v-model="toYM" inputmode="numeric" pattern="\d{6}" placeholder="YYYYMM（可留空）" />
+          <input v-model="toYM" inputmode="numeric" pattern="\d{5}" placeholder="YYYMM（可留空）" />
         </div>
         <div class="field align-end">
           <button class="btn" :disabled="loading" @click="query">
@@ -200,7 +203,7 @@ onMounted(() => { query() })
       <h2>新增</h2>
       <div class="grid">
         <div class="field"><label>出表日期</label><input v-model="form.reportDate" inputmode="numeric" placeholder="數字（可空）" /></div>
-        <div class="field"><label>資料年月</label><input v-model="form.dataYearMonth" inputmode="numeric" pattern="\d{6}" placeholder="YYYYMM(必填)" /></div>
+        <div class="field"><label>資料年月</label><input v-model="form.dataYearMonth" inputmode="numeric" pattern="\d{5}" placeholder="YYYMM(必填)" /></div>
         <div class="field"><label>公司代號</label><input v-model="form.companyCode" inputmode="numeric" placeholder="數字(必填)" /></div>
         <div class="field"><label>公司名稱</label><input v-model="form.companyName" placeholder="公司名稱" /></div>
 

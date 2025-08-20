@@ -1,7 +1,7 @@
 export interface RevenueUpsertRequest {
   ReportDate?: number;
   DataYearMonth: number;         // YYYMM，必填
-  CompanyCode: string;           // 4 碼字串，必填
+  CompanyCode: number;           // 4 碼字串，必填
   CompanyName?: string;
   Industry?: string;
   Rev_CurrentMonth?: number;
